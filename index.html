@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TON Wallet Connect</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #wallet-info {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Подключите ваш TON кошелек</h1>
+    <button id="connect-wallet">Подключить кошелек</button>
+    <p id="wallet-info"></p>
+
+    <script src="https://unpkg.com/@tonconnect/sdk/dist/tonconnect-sdk.min.js"></script>
+    <script>
+        const connector = new TonConnectSDK.TonConnect({
+            manifestUrl: 'https://yourdomain.com/tonconnect-manifest.json'
+        });
+
+        const connectButton = document.getElementById('connect-wallet');
+        const walletInfo = document.getElementById('wallet-info');
+
+        // Проверяем, доступен ли инжектированный кошелек
+        const checkInjectedWallet = async () => {
+            const walletsList = await connector.getWallets();
+            if (walletsList.length > 0) {
+                // Инжектированный кошелек доступен
+                const wallet = walletsList[0]; // Используем первый доступный кошелек
+                connector.connect({ jsBridgeKey: wallet.jsBridgeKey });
+            } else {
+                // Инжектированный кошелек недоступен
+                walletInfo.innerHTML = "Инжектированный кошелек не найден. Убедитесь, что вы используете Tonkeeper или другой поддерживаемый кошелек.";
+            }
+        };
+
+        // Автоматически проверяем при загрузке страницы
+        checkInjectedWallet();
+
+        // Обработчик для кнопки
+        connectButton.addEventListener('click', async () => {
+            await checkInjectedWallet();
+        });
+
+        // Обработчик изменения статуса кошелька
+        connector.onStatusChange(wallet => {
+            if (wallet) {
+                walletInfo.innerHTML = `Кошелек подключен: ${wallet.account.address}`;
+            } else {
+                walletInfo.innerHTML = 'Кошелек отключен';
+            }
+        });
+    </script>
+</body>
+</html>
