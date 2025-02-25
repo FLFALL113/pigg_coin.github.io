@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-    <h1>Подключите ваш TON кошелекы</h1>
+    <h1>Подключите ваш TON кошелек</h1>
     <button id="connect-wallet">Подключить кошелек</button>
     <p id="wallet-info"></p>
 
@@ -78,6 +78,9 @@
                 walletInfo.innerHTML = 'Кошелек отключен';
             }
         });
+
+        // Автоматически проверяем при загрузке страницы
+        checkInjectedWallet();
     </script>
 </body>
 </html>
