@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-    <h1>Подключите ваш TON кошелек</h1>
+    <h1>Подключите ваш TON кошелекы</h1>
     <button id="connect-wallet">Подключить кошелек</button>
     <p id="wallet-info"></p>
 
@@ -37,23 +37,37 @@
 
         // Проверяем, доступен ли инжектированный кошелек
         const checkInjectedWallet = async () => {
+            try {
+                const walletsList = await connector.getWallets();
+                if (walletsList.length > 0) {
+                    // Инжектированный кошелек доступен
+                    const wallet = walletsList[0]; // Используем первый доступный кошелек
+                    connector.connect({ jsBridgeKey: wallet.jsBridgeKey });
+                } else {
+                    // Инжектированный кошелек недоступен
+                    walletInfo.innerHTML = "Инжектированный кошелек не найден. Убедитесь, что вы используете Tonkeeper или другой поддерживаемый кошелек.";
+                }
+            } catch (error) {
+                console.error("Ошибка при подключении к кошельку:", error);
+                walletInfo.innerHTML = "Произошла ошибка при подключении к кошельку.";
+            }
+        };
+
+        // Обработчик для кнопки
+        connectButton.addEventListener('click', async () => {
             const walletsList = await connector.getWallets();
             if (walletsList.length > 0) {
                 // Инжектированный кошелек доступен
                 const wallet = walletsList[0]; // Используем первый доступный кошелек
                 connector.connect({ jsBridgeKey: wallet.jsBridgeKey });
             } else {
-                // Инжектированный кошелек недоступен
-                walletInfo.innerHTML = "Инжектированный кошелек не найден. Убедитесь, что вы используете Tonkeeper или другой поддерживаемый кошелек.";
+                // Используем универсальную ссылку
+                const universalLink = connector.connect({
+                    universalLink: 'https://app.tonkeeper.com/ton-connect',
+                    bridgeUrl: 'https://bridge.tonapi.io/bridge'
+                });
+                window.open(universalLink, '_blank');
             }
-        };
-
-        // Автоматически проверяем при загрузке страницы
-        checkInjectedWallet();
-
-        // Обработчик для кнопки
-        connectButton.addEventListener('click', async () => {
-            await checkInjectedWallet();
         });
 
         // Обработчик изменения статуса кошелька
