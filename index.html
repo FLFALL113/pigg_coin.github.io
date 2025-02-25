@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-    <h1>Подключите ваш TON кошелек</h1>
+    <h1>Подключите ваш TON кошелеык</h1>
     <button id="connect-wallet">Подключить кошелек</button>
     <p id="wallet-info"></p>
 
@@ -35,8 +35,8 @@
         const connectButton = document.getElementById('connect-wallet');
         const walletInfo = document.getElementById('wallet-info');
 
-        // Проверяем, доступен ли инжектированный кошелек
-        const checkInjectedWallet = async () => {
+        // Функция для открытия TON Connect UI
+        const openTonConnectUI = async () => {
             try {
                 const walletsList = await connector.getWallets();
                 if (walletsList.length > 0) {
@@ -44,30 +44,24 @@
                     const wallet = walletsList[0]; // Используем первый доступный кошелек
                     connector.connect({ jsBridgeKey: wallet.jsBridgeKey });
                 } else {
-                    // Инжектированный кошелек недоступен
-                    walletInfo.innerHTML = "Инжектированный кошелек не найден. Убедитесь, что вы используете Tonkeeper или другой поддерживаемый кошелек.";
+                    // Инжектированный кошелек недоступен, используем универсальную ссылку
+                    const universalLink = connector.connect({
+                        universalLink: 'https://app.tonkeeper.com/ton-connect',
+                        bridgeUrl: 'https://bridge.tonapi.io/bridge'
+                    });
+                    window.open(universalLink, '_blank');
                 }
             } catch (error) {
                 console.error("Ошибка при подключении к кошельку:", error);
-                walletInfo.innerHTML = "Произошла ошибка при подключении к кошельку.";
             }
         };
 
+        // Автоматически открываем TON Connect UI при загрузке страницы
+        openTonConnectUI();
+
         // Обработчик для кнопки
         connectButton.addEventListener('click', async () => {
-            const walletsList = await connector.getWallets();
-            if (walletsList.length > 0) {
-                // Инжектированный кошелек доступен
-                const wallet = walletsList[0]; // Используем первый доступный кошелек
-                connector.connect({ jsBridgeKey: wallet.jsBridgeKey });
-            } else {
-                // Используем универсальную ссылку
-                const universalLink = connector.connect({
-                    universalLink: 'https://app.tonkeeper.com/ton-connect',
-                    bridgeUrl: 'https://bridge.tonapi.io/bridge'
-                });
-                window.open(universalLink, '_blank');
-            }
+            await openTonConnectUI();
         });
 
         // Обработчик изменения статуса кошелька
@@ -78,9 +72,6 @@
                 walletInfo.innerHTML = 'Кошелек отключен';
             }
         });
-
-        // Автоматически проверяем при загрузке страницы
-        checkInjectedWallet();
     </script>
 </body>
 </html>
